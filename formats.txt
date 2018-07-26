@@ -1,0 +1,989 @@
+%let pgmnm=formats;
+%let dirnm=&log_dir./;
+%include "../util/log_code.sas";
+
+*
+*   program: formats.sas
+*   purpose: to create sas formats out of the various code set reference tables;
+*;
+
+* workaround to remove duplicate, active records until feeds are fixed;
+
+proc sort data=pub.ref_code_value  out=code_value;
+by health_system_source_id code_set code_value_ref active_ind updt_dt_tm;
+run;
+
+data code_value;
+set code_value;
+by health_system_source_id code_set code_value_ref active_ind updt_dt_tm;
+if last.active_ind;
+run;
+
+proc sort data=pub.code_value_out_ref out=code_value_out;
+by health_system_source_id code_set code_value_ref alias alias_type_meaning active_ind updt_dt_tm;
+run;
+
+data code_value_out;
+set code_value_out;
+by health_system_source_id code_set code_value_ref alias alias_type_meaning active_ind updt_dt_tm;
+if last.active_ind;
+run;
+
+sasfile code_value open;
+sasfile code_value_out open;
+
+
+* admit source;
+data admit_source(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '2' and active_ind;
+run;
+
+* admit type;
+data admit_type(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '3' and active_ind;
+run;
+
+* discharge disposition;
+data discharge_disposition(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '19' and active_ind;
+run;
+
+* encounter status;
+data encounter_status(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '261' and active_ind;
+run;
+
+* medical service;
+data medical_service(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '34' and active_ind;
+run;
+
+* locations;
+data facilities(keep=desc_meaning desc_display desc_description code_value_ref)
+     building(keep=desc_meaning desc_display desc_description code_value_ref)
+     bed(keep=desc_meaning desc_display desc_description code_value_ref)
+     room(keep=desc_meaning desc_display desc_description code_value_ref)
+     nurseunit(keep=desc_meaning desc_display desc_description code_value_ref)
+     set_220(keep=desc_meaning desc_display desc_description code_value_ref updt_dt_tm);
+
+set code_value;
+   if HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '220' and active_ind then output set_220;
+   if HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '220' and desc_meaning = 'FACILITY' and active_ind then output facilities;
+   if HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '220' and desc_meaning = 'BUILDING' and active_ind then output building;
+   if HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '220' and desc_meaning = 'BED' and active_ind then output bed;
+   if HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '220' and desc_meaning = 'ROOM' and active_ind then output room;
+   if HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '220' and desc_meaning = 'NURSEUNIT' and active_ind then output nurseunit;
+
+run;
+
+proc sort data=set_220 nodupkey; by code_value_ref;
+
+* patient type;
+data patient_type(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '71' and active_ind;
+run;
+
+* encounter class;
+data encounter_class(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '321' and active_ind;
+run;
+
+* encounter type class;
+data encounter_type_class(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '69' and active_ind;
+run;
+
+* financial class;
+data financial_class(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '354' and active_ind;
+run;
+
+* vocabulary;
+data vocabulary;
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and active_ind and code_set = '400';
+run;
+
+* principle_type;
+data principle_type;
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and active_ind and code_set = '401';
+run;
+
+* vocabulary_axis;
+data vocabulary_axis;
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and active_ind and code_set = '15849';
+run;
+
+* concept_source;
+data concept_source;
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and active_ind and code_set = '12100';
+run;
+
+* drg_mdc;
+data drg_mdc;
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and active_ind and code_set = '14285';
+run;
+
+* status_ref;
+data status_ref;
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and active_ind and code_set = '16109';
+run;
+
+
+* contributor_system;
+data contributor_system;
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and active_ind and code_set = '89';
+run;
+
+* service_res_ref;
+data serv_res_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '221' and active_ind;
+run;
+
+* type_ref;
+data type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '4500' and active_ind;
+run;
+
+* active_status_ref;
+data active_status_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '48' and active_ind;
+run;
+
+* empl_type_ref;
+data empl_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '26' and active_ind;
+run;
+
+* empl_status_ref;
+data empl_status_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '348' and active_ind;
+run;
+
+
+* subtype_ref;
+data subtype_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '5801' and active_ind;
+run;
+
+proc contents data=serv_res_ref;
+run;
+
+proc freq data=serv_res_ref;
+tables code_value_ref/missing list;
+run;
+
+* activity_type_ref;
+data act_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '14489' and active_ind;
+run;
+
+* appointment_state_ref;
+data appt_state_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '14233' and active_ind;
+run;
+
+* meprs 4 codes;
+data meprs4_cd(keep=code_value_ref alias meprs4);
+set code_value_out;
+
+   where code_set = '220' and active_ind = 1 and contributor_source_ref = '108418263';
+
+   length meprs4 $20;
+   if substr(alias,1,4) in('Navy','NAVY','Army','ARMY') then meprs4 = substr(alias,6,4);
+   else if substr(alias,1,9) in('AIR FORCE','Air Force') then meprs4 = substr(alias,11,4);
+   if substr(meprs4,1,1) in('A','B','C','D','E','F');
+run;
+
+* dmisid;
+data dmisid(keep=code_value_ref alias dmisid);
+set code_value_out;
+   where code_set = '220' and active_ind = 1 and contributor_source_ref = '105099617';
+   if alias_type_meaning not in('BED','ROOM') and not anyalpha(substr(alias,1,9));
+   dmisid = substr(alias,6,4);
+run;
+
+* gender;
+data gender(keep=code_value_ref alias);
+set code_value_out;
+   where code_set = '57' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref in('','105099617');
+run;
+
+
+* ethnic_group;
+data ethnic_group(keep=code_value_ref alias);
+set code_value_out;
+   *here code_set = '27' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref = '105099617';
+   where code_set = '27' and health_system_source_id=18635;
+      if contributor_source_ref = '' or 
+        (contributor_source_ref = '105499759' and datepart(beg_effective_dt_tm) = '28nov16'd);
+run;
+
+* race;
+data race(keep=code_value_ref alias);
+set code_value_out;
+   where code_set = '282' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref = '105099617';
+run;
+
+* marital_status;
+data marital_status(keep=code_value_ref alias);
+set code_value_out;
+   where code_set = '38' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref in('','105099617');
+run;
+
+* language;
+data language(keep=code_value_ref alias);
+set code_value_out;
+   where code_set = '36' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref in('','105099617');
+run;
+
+* religion;
+data religion(keep=code_value_ref desc_display);
+set code_value;
+   where code_set = '49' and active_ind = 1 and health_system_source_id=18635;* and contributor_source_ref = '105099617';
+run;
+
+* occupation;
+data occupation(keep=code_value_ref alias);
+set code_value_out;
+   where code_set = '374' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref = '105099617';
+run;
+
+* country;
+data country(keep=code_value_ref alias);
+set code_value_out;
+   where code_set = '15' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref in('','105099617');
+run;
+
+* state;
+data state(keep=code_value_ref alias);
+set code_value_out;
+   where code_set = '62' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref in('','105099617');
+run;
+
+* personnel_type_ref;
+data personnel_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '333' and active_ind;
+run;
+
+* appointment_slot_state_ref;
+data appt_slot_state_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '14490' and active_ind;
+run;
+
+* location_type;
+data location_type (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '222' and active_ind;
+run;
+
+* discipline_type;
+data discipline_type (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '6000' and active_ind;
+run;
+
+* frequency_ref;
+data frequency_ref (keep=desc_meaning desc_display desc_description code_value_ref beg_effective_dt_tm);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '4003' and active_ind;
+run;
+
+proc sort data=frequency_ref; by code_value_ref beg_effective_dt_tm;
+
+data frequency_ref;
+set frequency_ref;
+by code_value_ref;
+if last.code_value_ref;
+run;
+
+* catalog_ref;
+data catalog_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '200' and active_ind;
+run;
+
+* ord_activity_type_ref;
+data ord_activity_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '106' and active_ind;
+run;
+
+* relation_ref;
+data relation_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '338' and active_ind;
+run;
+
+* person_relation_ref;
+data person_relation_ref (keep=desc_meaning desc_display desc_description code_value_ref beg_effective_dt_tm);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '40' and active_ind;
+run;
+
+proc sort data=person_relation_ref; by code_value_ref beg_effective_dt_tm;
+
+data person_relation_ref;
+set person_relation_ref;
+by code_value_ref;
+if last.code_value_ref;
+run;
+
+
+* plan_type_ref;
+data plan_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '367' and active_ind;
+run;
+
+* product_ref;
+data product_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '26310' and active_ind;
+run;
+
+* unit_ref;
+data unit_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '54' and active_ind;
+run;
+
+*duration_unit_ref;
+data duration_unit_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '340' and active_ind;
+run;
+
+*result_process_ref;
+data result_process_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '1902' and active_ind;
+run;
+
+*relation_type_ref;
+data relation_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '351' and active_ind;
+run;
+
+*contact_role_ref;
+data contact_role_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '293' and active_ind;
+run;
+
+*visitation_allowed_ref;
+data visitation_allowed_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '286' and active_ind;
+run;
+
+*attrib_type_ref;
+data attrib_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '17649' and active_ind;
+run;
+
+*confidence_level_ref;
+data confidence_level_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '87' and active_ind;
+run;
+
+*position_ref;
+data position (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '88' and active_ind;
+run;
+
+* birth weight units;
+data birth_weight_units(keep=desc_meaning desc_description code_value_ref);
+set code_value;
+   where code_set = '14659' and active_ind = 1;
+run;
+
+* Info Type;
+data info_type(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '355' and 
+active_ind;
+run;
+
+* Info Sub Type;
+data info_sub_type(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '356' and 
+active_ind;
+run;
+
+* Admin Site;
+data admin_site(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '97' and 
+active_ind;
+run;
+
+* Admin Route Type;
+data admin_route(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '4001' and active_ind;
+run;
+
+* Medication Form;
+data medication_form(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '95' and active_ind;
+run;
+
+* Medication Admin Method;
+data med_admin_method(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '99' and active_ind;
+run;
+
+* Dosage unit;
+data dosage_unit(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '54' and active_ind;
+run;
+
+* Substance Manufacturer;
+data substance_manufacturer(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '221' and active_ind;
+run;
+
+* Event Class;
+data event_class(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '53' and active_ind;
+run;
+
+
+* Immunization Type;
+data immunization_type(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '30260' and active_ind;
+run;
+
+
+
+
+* Exam Status Ref;
+data exam_status_ref (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '14192' and 
+active_ind;
+run;
+
+* Rad Report Status;
+data rad_report_status(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '14202' and 
+active_ind;
+run;
+
+* Rad Service Resource;
+data rad_svc_res(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '221' and 
+desc_meaning='RADEXAMROOM' and active_ind;
+run;
+
+* Rad Report Creation Method;
+data rpt_creation_mthd(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '5900' and 
+active_ind;
+run;
+
+* Subsection Ref;
+data subsection_ref(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '221' and 
+desc_meaning='SUBSECTION' and active_ind;
+run;
+
+* Bill Status;
+data bill_status (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '18935' and 
+active_ind;
+run;
+
+* Payment Planning Status;
+data payment_plan_status(keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '26673' and 
+active_ind;
+run;
+
+* Hold Reason;
+data hold_reason (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '25872' and 
+active_ind;
+run;
+
+* Collection State;
+data collection_state (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '28120' and 
+active_ind;
+run;
+
+* Send Back Reason;
+data send_back_reason (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '28121' and 
+active_ind;
+run;
+
+* Charge Type Code;
+data charge_type_code (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '13028' and 
+active_ind;
+run;
+
+* ABN Status;
+data abn_status (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '17969' and 
+active_ind;
+run;
+
+* Payor Type;
+data payor_type (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '25089' and 
+active_ind;
+run;
+
+* Tier Group;
+data tier_grp (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '13035' and 
+active_ind;
+run;
+
+* Revenue Code;
+data rev_code (keep=desc_meaning desc_display desc_description 
+code_value_ref desc_full);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '20769' and 
+active_ind;
+desc_full = desc_display||': '||desc_description;
+run;
+
+* Credit Reason;
+data credit_reason (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '21689' and 
+active_ind;
+run;
+
+* Bill Class;
+data bill_class (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '21849' and 
+active_ind;
+run;
+
+* Bill Status Reason;
+data bill_status_reason (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '22089' and 
+active_ind;
+run;
+
+* Media Type Reason;
+data media_type (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '21752' and 
+active_ind;
+run;
+
+* Media Subtype Reason;
+data media_subtype (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '21753' and 
+active_ind;
+run;
+
+* Transaction Activity Type;
+data trans_act_type (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '18629' and 
+active_ind;
+run;
+
+* Transaction Type;
+data trans_type (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '18649' and 
+active_ind;
+run;
+
+* Transaction Sub Type;
+data trans_subtype (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '20549' and 
+active_ind;
+run;
+
+* Workload Type;
+data workload_type (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '16209' and active_ind;
+run;
+
+* Item for Count;
+data item_for_count (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '15229' and 
+active_ind;
+run;
+
+* Collection Priority;
+data collection_priority (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '2054' and 
+active_ind;
+run;
+
+* Report Priority;
+data report_priority (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '1905' and 
+active_ind;
+run;
+
+* Bill Item;
+data bill_item (keep=desc_meaning desc_display desc_description 
+code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '13019' and 
+active_ind;
+run;
+
+* Bill Schedule;
+data bill_schedule (keep=desc_meaning code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '14002' and active_ind;
+run;
+
+* select nomenclatures - cpt, hcpcs, icd;
+data nomen(keep=nomenclature_sk value);
+set pub.nomenclature;
+   where active_ind and vocabulary_ref in('637890','1217','1222','654470','19350056','19350130','1231','4326105','17377005');
+run;
+
+* cvx;
+data cvx(keep=code_value_ref alias);
+set code_value_out;
+   where active_ind = 1 and health_system_source_id=18635 and contributor_source_ref in('18024127');
+run;
+
+
+%macro make_fmt(lib,dsn,fmtname,var1,var2);
+
+data fmt_dataset;
+  retain fmtname "&fmtname.";
+  set &dsn. end=eof;
+  start = &var1.;
+  label = &var2.;
+  output;
+run;
+
+proc format cntlin=fmt_dataset library=&lib.;
+  select &fmtname.;
+run;
+
+%mend make_fmt;
+
+*
+*  arguments for the make_fmt macro:
+*    lib = the library to save the permanent format to
+*    dsn = the dataset containing the raw data to be used for making the format
+*    fmtname = the name of the format you are going to create [use a dollar sign if char format desired (ie. $fac_name)]
+*    var1 = the lookup value field
+*    var2 = the field with the values that will be returned by the format
+*;
+
+%make_fmt(fmt,facilities,$facility,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,facilities,$facility_disp,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,building,$building,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,set_220,$locs,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,bed,$bed,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,room,$room,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,nurseunit,$nurseunit,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,nurseunit,$nurseunit_disp,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,patient_type,$patient_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,encounter_class,$encounter_class,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,encounter_type_class,$encounter_type_class,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,financial_class,$financial_class,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,admit_source,$admit_source,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,discharge_disposition,$discharge_disposition,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,encounter_status,$encounter_status,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,medical_service,$medical_service,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,admit_type,$admit_type,CODE_VALUE_REF,desc_description);
+
+%make_fmt(fmt,vocabulary,$vocabulary,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,principle_type,$principle_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,vocabulary_axis,$vocabulary_axis,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,concept_source,$concept_source,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,drg_mdc,$drg_mdc,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,contributor_system,$contributor_system,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,meprs4_cd,$meprs4cd,CODE_VALUE_REF,meprs4);
+%make_fmt(fmt,serv_res_ref,$serv_res,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,act_type_ref,$act_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,appt_state_ref,$appt_state,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,personnel_type_ref,$personnel_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,location_type,$location_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,discipline_type,$discipline_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,appt_slot_state_ref,$appt_slot_state,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,frequency_ref,$frequency_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,status_ref,$status_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,type_ref,$type_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,catalog_ref,$catalog_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,ord_activity_type_ref,$ord_activity_type_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,unit_ref,$unit_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,duration_unit_ref,$duration_unit_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,result_process_ref,$result_process_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,subtype_ref,$subtype_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,plan_type_ref,$plan_type_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,product_ref,$product_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,relation_ref,$relation_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,active_status_ref,$active_status_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,empl_type_ref,$empl_type_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,empl_status_ref,$empl_status_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,person_relation_ref,$person_relation_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,relation_type_ref,$relation_type_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,contact_role_ref,$contact_role_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,visitation_allowed_ref,$visitation_allowed_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,attrib_type_ref,$attrib_type_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,confidence_level_ref,$confidence_level_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,info_type,$info_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,info_sub_type,$info_sub_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,admin_site,$admin_site,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,admin_route,$admin_route,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,medication_form,$medication_form,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,dosage_unit,$dosage_unit,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,substance_manufacturer,$substance_manufacturer,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,med_admin_method,$med_admin_method,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,event_class,$event_class,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,immunization_type,$immunization_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,position,$position,CODE_VALUE_REF,desc_display);
+
+
+%make_fmt(fmt,dmisid,$dmisid,CODE_VALUE_REF,dmisid);
+%make_fmt(fmt,gender,$gender,CODE_VALUE_REF,alias);
+%make_fmt(fmt,ethnic_group,$ethnic_group,CODE_VALUE_REF,alias);
+%make_fmt(fmt,race,$race,CODE_VALUE_REF,alias);
+%make_fmt(fmt,marital_status,$marital_status,CODE_VALUE_REF,alias);
+%make_fmt(fmt,language,$language,CODE_VALUE_REF,alias);
+%make_fmt(fmt,religion,$religion,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,occupation,$occupation,CODE_VALUE_REF,alias);
+%make_fmt(fmt,country,$country,CODE_VALUE_REF,alias);
+%make_fmt(fmt,state,$state,CODE_VALUE_REF,alias);
+%make_fmt(fmt,birth_weight_units,$birth_weight_units,CODE_VALUE_REF,desc_meaning);
+%make_fmt(fmt,exam_status_ref,$rad_exam_status,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,rad_report_status,$rad_report_status,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,rad_svc_res,$rad_svc_res,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,rpt_creation_mthd,$rpt_creation_mthd,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,subsection_ref,$subsection_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,bill_status,$bill_status,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,payment_plan_status,$payment_plan_status,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,hold_reason,$hold_reason,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,collection_state,$collection_state,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,send_back_reason,$send_back_reason,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,charge_type_code,$charge_type_code,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,abn_status,$abn_status,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,payor_type,$payor_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,tier_grp,$tier_grp,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,payor_type,$payor_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,rev_code,$rev_code,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,rev_code,$rev_code_wdesc,CODE_VALUE_REF,desc_full);
+%make_fmt(fmt,credit_reason,$credit_reason,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,bill_class,$bill_class,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,bill_status_reason,$bill_status_reason,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,media_type,$media_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,media_subtype,$media_subtype,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,trans_act_type,$trans_act_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,trans_type,$trans_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,trans_subtype,$trans_subtype,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,workload_type,$workload_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,item_for_count,$item_for_count,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,collection_priority,$collection_priority,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,report_priority,$report_priority,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,bill_item,$bill_item,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,bill_schedule,$bill_schedule,CODE_VALUE_REF,desc_meaning);
+%make_fmt(fmt,nomen,$nomen,nomenclature_sk,value);
+%make_fmt(fmt,cvx,$cvx,code_value_ref,alias);
+
+*Adding formats from CLINICAL_EVENTS area;
+*Commented out code_sets are either unavailable (46 and 195) or repeated above;
+*Macro to run for all code sets;
+%macro code_set(code_set,var,fmt);
+	data &var.(keep = desc_meaning desc_display desc_description code_value_ref);
+		set code_value;
+		where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = "&code_set." and active_ind;
+	run;
+
+	%make_fmt(fmt,&var.,$&fmt.,CODE_VALUE_REF,desc_description);
+
+	proc datasets; delete fmt_dataset &var.; run;
+%mend code_set;
+
+%code_set(8,result_status_ref,res_stat);
+%code_set(24,event_reltn_ref,ev_reltn);
+*%code_set(46,worse_lab_model_ref,lab_modl);
+*%code_set(48,record_status_ref,rec_stat);
+%code_set(50,event_normacy_method_ref,ev_nrm_m);
+%code_set(52,event_normacy_ref,ev_norm);
+*%code_set(54,result_units_ref,units);
+%code_set(72,event_code_ref,ev_code);
+*%code_set(87,inquire_security_ref,security);
+*%code_set(195,event_class_ref,ev_class);
+%code_set(29520,data_entry_method_ref,data_ent);
+%code_set(30200,event_source_ref,ev_source);
+
+*Adding formats or use in Micro and Gen_Lab files as per SK;
+*Does not include formats already listed above;
+%macro code_set(code_set,var,fmt);
+	data &var.(keep=desc_meaning desc_display desc_description code_value_ref);
+		set code_value;
+		where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = "&code_set." and active_ind;
+	run;
+   
+	%make_fmt(fmt,&var.,$&fmt.,code_value_ref,desc_description);
+
+	proc datasets;
+		delete fmt_dataset &var.;
+	run;
+%mend code_set;
+
+*code_set(2054, COLLECTION_PRIORITY_REF, COLLP);	
+%code_set(240, FIRST_CNTR_UNITS_REF, UNITII);	
+%code_set(2058, FIRST_CTNR_COLL_METHOD_REF, COLLM);	
+%code_set(2051, FIRST_CTNR_TYPE_REF, SPECC);	
+%code_set(2052, FIRST_SPECIMEN_TYPE_REF, SPECT);	
+%code_set(263575, BIOLOGICAL_CATEGORY_REF, PAREDNA);	
+*code_set(1902, CRITICAL_REF, RESPC);	
+*code_set(1902, DELTA_REF, RESPC);	
+*code_set(1902, FEASIBLE_REF, RESPC);	
+*code_set(1902, LINEAR_REF, RESPC);	
+*code_set(1902, NORMAL_REF, RESPC);	
+*code_set(1902, QC_OVERRIDE_REF, RESPC);	
+%code_set(1901, RESULT_STATUS_REF, MICSII);	
+%code_set(289, RESULT_TYPE_REF, RESUT);	
+%code_set(54, RESULT_VALUE_UNIT_REF, UNITI);	
+%code_set(289, RESULT_TYPE_REF, RESUT);	
+
+%code_set(1028, FIRST_SPECIMEN_SITE_REF, BODYS);	
+%code_set(2052, FIRST_SPECIMEN_TYPE_REF, SPECT);	
+%code_set(1031, STATUS_REF, MICSI);	
+%code_set(1021, ORGANISM_REF, ORGAO);	
+%code_set(1022, REPONSE_REF, CODER);	
+%code_set(1005, BIOCHEMICAL_DETAIL_TYPE_REF, DETAB);	
+%code_set(1002, BIOCHEMICAL_GROUP_TYPE_REF, GROUB);	
+%code_set(1021, ORGANISM_REF, ORGAO);	
+%code_set(1000, REPORT_TYPE_REF, MICRR);	
+%code_set(65, SUSCEPTIBILITY_METHOD_REF, SUSCM);	
+*code_set(1901, TASK_STATUS_REF, MICSII);	
+%code_set(1025, ALPHA_NUMERIC_RESULT_REF, ALPSR);	
+%code_set(1011, ANTIBIOTIC_MEDICATION_REF, ANTIA);	
+%code_set(1004, DETAIL_TEST_TYPE_REF, SUSCD);	
+%code_set(64, INTERPRETATION_RESULT_REF, SUSIR);	
+%code_set(1010, PANEL_REF, MICRT);	
+*code_set(1901, PROCEDURE_STATUS_REF, MICSII);	
+*code_set(1901, RESULT_STATUS_REF, MICSII);	
+*code_set(54, RESULT_UNIT_REF, UNITI);	
+%code_set(231, COLL_CLASS_REF, COLLC);	
+*code_set(2058, COLLECTION_METHOD_REF, COLLM);	
+*code_set(220, CURRENT_LOCATION_REF, ROOMROOM);	
+*code_set(2051, SPEC_CNTNR_REF, SPECC);	
+%code_set(230, SPEC_HNDL_REF, SPEHI);	
+*code_set(2052, SPECIMEN_TYPE_REF, SPECT);	
+%code_set(2061, STORAGE_STATUS_REF, CONTE);	
+*code_set(240, UNITS_REF, UNITII);	
+*code_set(220, CURRENT_LOCATION_REF, ROOMROOM);	
+*code_set(220, LOCATION_REF, ROOMROOM);	
+*code_set(221, SERVICE_RESOURCE_REF, SERVR);
+
+* create standalone formats for CDC based lookups;
+
+proc format library=fmt;
+   value $ethnic_group_cdc 
+      '2135-2'='Hispanic or Latino'
+      '2186-5'='Not Hispanic or Latino'
+      other=" ";
+      
+   value $race_cdc
+      '1002-5'='American Indian or Alaska Native'
+      '2028-9'='Asian'
+      '2054-5'='Black or African American'
+      '2076-8'='Native Hawaiian or Other Pacific Islander'
+      '2131-1'='Other Race'
+      '2106-3'='White'
+      other=" ";
+run;
+
+sasfile code_value close;
+sasfile code_value_out close;
+
