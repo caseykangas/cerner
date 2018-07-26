@@ -20,12 +20,12 @@ if last.active_ind;
 run;
 
 proc sort data=pub.code_value_out_ref out=code_value_out;
-by health_system_source_id code_set code_value_ref alias alias_type_meaning active_ind updt_dt_tm;
+by health_system_source_id code_set code_value_ref alias alias_type_meaning contributor_source_ref active_ind updt_dt_tm;
 run;
 
 data code_value_out;
 set code_value_out;
-by health_system_source_id code_set code_value_ref alias alias_type_meaning active_ind updt_dt_tm;
+by health_system_source_id code_set code_value_ref alias alias_type_meaning contributor_source_ref active_ind updt_dt_tm;
 if last.active_ind;
 run;
 
@@ -206,6 +206,57 @@ set code_value;
    where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '14233' and active_ind;
 run;
 
+*Added encounter formats from Mitzi May 7, 2018;
+
+* BENCAT;
+data bencat(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '100070' and active_ind and src_active_ind;
+run;
+
+* PATCAT;
+data patcat(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '100075' and active_ind and src_active_ind;
+run;
+
+* Classification Ref;
+data classification_ref(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '12033' and active_ind and src_active_ind;
+run;
+
+* Diag Type;
+data diag_type(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '17' and active_ind and src_active_ind;
+run;
+
+* Clinical Service Ref;
+data clin_svc(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '29741' and active_ind and src_active_ind;
+run;
+
+* Certainty Ref;
+data certainty(keep=desc_meaning desc_display desc_description code_value_ref updt_dt_tm);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '12035' and active_ind and src_active_ind;
+run;
+
+proc sort data=certainty; by code_value_ref descending updt_dt_tm;
+run;
+
+proc sort data=certainty nodupkey; by code_value_ref;
+run;
+
+* Confirmation Status Ref;
+data confirmation_status(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where HEALTH_SYSTEM_SOURCE_ID = 18635 and code_set = '12031' and active_ind and src_active_ind;
+run;
+*end of additional encounter formats;
+
 * meprs 4 codes;
 data meprs4_cd(keep=code_value_ref alias meprs4);
 set code_value_out;
@@ -283,6 +334,52 @@ data state(keep=code_value_ref alias);
 set code_value_out;
    where code_set = '62' and active_ind = 1 and health_system_source_id=18635 and contributor_source_ref in('','105099617');
 run;
+
+*Added additional referral formats;
+* priority;
+data priority(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where code_set = '1304' and health_system_source_id=18635 and active_ind;
+run;
+ 
+* discontinue ref;
+data discontinue_ref(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where code_set = '1309' and health_system_source_id=18635 and active_ind;
+run;
+
+* order status ref;
+data order_status_ref(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where code_set = '6004' and health_system_source_id=18635 and active_ind;
+run;
+
+* dept status ref;
+data dept_status_ref(keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where code_set = '14281' and health_system_source_id=18635 and active_ind;
+run;
+
+*new as of July 2 2018;
+*action type ref;
+data action_type_ref(keep=desc_meaning desc_display desc_description code_value_ref); 
+set code_value;
+   where code_set = '6003' and health_system_source_id=18635 and active_ind;
+run;
+
+*service category ref;
+data service_category_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where code_set = '3394' and health_system_source_id=18635 and active_ind;
+run;
+
+*reject reason ref;
+data reject_reason_ref (keep=desc_meaning desc_display desc_description code_value_ref);
+set code_value;
+   where code_set = '14245' and health_system_source_id=18635 and active_ind;
+run;
+
+*end referral formats;
 
 * personnel_type_ref;
 data personnel_type_ref (keep=desc_meaning desc_display desc_description code_value_ref);
@@ -841,6 +938,13 @@ run;
 %make_fmt(fmt,occupation,$occupation,CODE_VALUE_REF,alias);
 %make_fmt(fmt,country,$country,CODE_VALUE_REF,alias);
 %make_fmt(fmt,state,$state,CODE_VALUE_REF,alias);
+%make_fmt(fmt,priority,$priority,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,discontinue_ref,$discontinue_ref,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,order_status_ref,$order_status_ref,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,dept_status_ref,$dept_status_ref,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,action_type_ref,$action_type_ref,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,service_category_ref,$service_category_ref,CODE_VALUE_REF,desc_display);
+%make_fmt(fmt,reject_reason_ref,$reject_reason_ref,CODE_VALUE_REF,desc_display);
 %make_fmt(fmt,birth_weight_units,$birth_weight_units,CODE_VALUE_REF,desc_meaning);
 %make_fmt(fmt,exam_status_ref,$rad_exam_status,CODE_VALUE_REF,desc_description);
 %make_fmt(fmt,rad_report_status,$rad_report_status,CODE_VALUE_REF,desc_description);
@@ -853,6 +957,13 @@ run;
 %make_fmt(fmt,collection_state,$collection_state,CODE_VALUE_REF,desc_description);
 %make_fmt(fmt,send_back_reason,$send_back_reason,CODE_VALUE_REF,desc_description);
 %make_fmt(fmt,charge_type_code,$charge_type_code,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,bencat,$bencat,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,patcat,$patcat,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,classification_ref,$classification_ref,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,diag_type,$diag_type,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,clin_svc,$clin_svc,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,certainty,$certainty,CODE_VALUE_REF,desc_description);
+%make_fmt(fmt,confirmation_status,$confirmation_status,CODE_VALUE_REF,desc_description);
 %make_fmt(fmt,abn_status,$abn_status,CODE_VALUE_REF,desc_description);
 %make_fmt(fmt,payor_type,$payor_type,CODE_VALUE_REF,desc_description);
 %make_fmt(fmt,tier_grp,$tier_grp,CODE_VALUE_REF,desc_display);
